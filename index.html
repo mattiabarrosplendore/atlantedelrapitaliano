@@ -143,6 +143,7 @@ function buildData(rows){
     const key=reg+"|"+city;
     if(!CITYXY[key]&&r.lat&&r.lon){const la=parseFloat(String(r.lat).replace(',','.')),lo=parseFloat(String(r.lon).replace(',','.'));if(isFinite(la)&&isFinite(lo))CITYXY[key]=proj(lo,la);}
   });
+  Object.values(DATA).forEach(cities=>Object.values(cities).forEach(list=>list.sort((a,b)=>(a.nome||"").localeCompare(b.nome||"","it",{sensitivity:"base"}))));
 }
 
 /* ---------- map ---------- */
