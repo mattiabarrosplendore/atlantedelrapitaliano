@@ -60,14 +60,20 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidd
 .btns a:hover{background:var(--ink);color:var(--bg)}
 .src{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:14px;text-align:right}
 
-.chips{position:fixed;z-index:20;display:none;background:var(--card);border:1px solid var(--hair);border-radius:7px;
-  padding:13px 15px;min-width:188px;box-shadow:0 16px 38px rgba(28,30,36,.14)}
-.chips .ct{font-family:var(--serif);font-weight:900;font-size:18px;margin:0 0 4px}
-.chips .cn{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
-.chips button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;background:transparent;border:0;
-  border-top:1px dotted var(--hair);padding:9px 0;font-size:14px;color:var(--ink);cursor:pointer;font-family:var(--sans);text-align:left}
-.chips button:hover{color:var(--accent)}
-.chips button .ar{color:var(--faint);font-family:var(--mono);font-size:11px}
+.chips{position:fixed;z-index:30;display:none;flex-direction:column;overflow:hidden;background:var(--card);border:1px solid var(--hair);border-radius:8px;width:236px;max-height:min(70vh,460px);box-shadow:0 16px 38px rgba(28,30,36,.16)}
+.chips .hd{position:relative;padding:14px 15px 11px;border-bottom:1px solid var(--hair);flex:0 0 auto}
+.chips .ct{font-family:var(--serif);font-weight:900;font-size:19px;margin:0 0 3px;padding-right:22px}
+.chips .cn{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.chips .srch{width:100%;margin-top:10px;box-sizing:border-box;font-family:var(--mono);font-size:12px;padding:7px 9px;border:1px solid var(--hair);border-radius:6px;background:var(--bg);color:var(--ink);outline:none}
+.chips .srch:focus{border-color:var(--accent)}
+.chips .x2{position:absolute;top:10px;right:11px;width:24px;height:24px;border-radius:50%;border:1px solid var(--hair);background:transparent;color:var(--soft);font-size:12px;cursor:pointer;line-height:1}
+.chips .x2:hover{border-color:var(--ink);color:var(--ink)}
+.chips .bd{overflow-y:auto;padding:2px 15px 8px;flex:1 1 auto;-webkit-overflow-scrolling:touch}
+.chips .nores{font-family:var(--mono);font-size:11px;color:var(--faint);padding:14px 0 6px}
+.chips .bd button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;background:transparent;border:0;border-top:1px dotted var(--hair);padding:10px 0;font-size:14px;color:var(--ink);cursor:pointer;font-family:var(--sans);text-align:left}
+.chips .bd button:first-child{border-top:0}
+.chips .bd button:hover{color:var(--accent)}
+.chips .bd button .ar{color:var(--faint);font-family:var(--mono);font-size:11px}
 
 @media (max-width:640px){
   .mast{top:14px;left:16px;max-width:78vw}
@@ -75,7 +81,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidd
   .back{top:14px;right:14px}
   .colophon{left:16px;right:16px;bottom:16px;max-width:none;font-size:12px}
   .cardx{padding:22px 18px 18px}
-  .chips{max-width:82vw}
+  .chips{width:auto;max-height:64vh}
+  .chips.sheet{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;max-height:80vh;border-radius:16px 16px 0 0}
   .btns{flex-wrap:wrap}
   .btns a{flex:1 1 30%;padding:11px 0}
 }
@@ -158,7 +165,24 @@ function clearCities(){const g=document.getElementById('cities');if(g)g.remove()
 function svgToPage(px,py){const r=map.getBoundingClientRect(),vb=curView,sc=Math.min(r.width/vb[2],r.height/vb[3]);const ox=r.left+(r.width-vb[2]*sc)/2,oy=r.top+(r.height-vb[3]*sc)/2;return[ox+(px-vb[0])*sc,oy+(py-vb[1])*sc];}
 function drawCities(reg,vb){clearCities();if(!DATA[reg])return;const g=document.createElementNS(ns,'g');g.id='cities';map.appendChild(g);const upp=vb[2]/300,r=2.7*upp,fs=10*upp;Object.keys(DATA[reg]).forEach(city=>{const p=CITYXY[reg+"|"+city];if(!p)return;const go=ev=>{ev.stopPropagation();openChips(reg,city);};const hit=document.createElementNS(ns,'circle');hit.setAttribute('cx',p[0]);hit.setAttribute('cy',p[1]);hit.setAttribute('r',Math.max(r*3.4,7*upp));hit.setAttribute('fill','transparent');hit.style.cursor='pointer';hit.addEventListener('click',go);const dot=document.createElementNS(ns,'circle');dot.setAttribute('class','cdot');dot.setAttribute('cx',p[0]);dot.setAttribute('cy',p[1]);dot.setAttribute('r',r);dot.style.cursor='pointer';const tx=document.createElementNS(ns,'text');tx.setAttribute('class','clbl');tx.setAttribute('x',p[0]+r+1.6*upp);tx.setAttribute('y',p[1]+fs*0.35);tx.setAttribute('font-size',fs);tx.textContent=city;tx.style.cursor='pointer';dot.addEventListener('click',go);tx.addEventListener('click',go);g.appendChild(hit);g.appendChild(dot);g.appendChild(tx);});}
 function selectRegion(name){current=name;back.style.display='inline-flex';chips.style.display='none';Object.entries(features).forEach(([n,el])=>{el.classList.toggle('sel',n===name);el.classList.toggle('dim',n!==name);});const vb=tVB(PRE.reg.find(r=>r.n===name).b);animVB(vb);setTimeout(()=>drawCities(name,vb),140);}
-function openChips(reg,city){const arts=DATA[reg][city],p=CITYXY[reg+"|"+city],xy=svgToPage(p[0],p[1]);chips.innerHTML='<div class="ct">'+city+'</div><div class="cn">'+reg+' · '+arts.length+' voci</div>'+arts.map((a,i)=>'<button data-i="'+i+'"><span>'+a.nome+'</span><span class="ar">→</span></button>').join('');chips.style.display='block';const vw=innerWidth,vh=innerHeight;chips.style.left=Math.min(Math.max(xy[0]+10,12),vw-210)+'px';chips.style.top=Math.min(Math.max(xy[1]-12,12),vh-200)+'px';chips.querySelectorAll('button[data-i]').forEach(b=>b.addEventListener('click',()=>openCard(arts[+b.dataset.i],reg,city)));}
+const fold=s=>(s||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function openChips(reg,city){
+  const arts=DATA[reg][city];
+  const search=arts.length>7;
+  chips.innerHTML='<div class="hd"><button class="x2" aria-label="Chiudi">✕</button>'+
+    '<div class="ct">'+city+'</div><div class="cn">'+reg+' · '+arts.length+' voci</div>'+
+    (search?'<input class="srch" type="text" placeholder="Cerca un nome…" aria-label="Cerca un nome">':'')+
+    '</div><div class="bd">'+arts.map((a,i)=>'<button data-i="'+i+'"><span>'+a.nome+'</span><span class="ar">→</span></button>').join('')+
+    '<div class="nores" style="display:none">Nessun nome trovato.</div></div>';
+  chips.style.display='flex';
+  const mobile=innerWidth<=640;
+  if(mobile){chips.classList.add('sheet');chips.style.left='';chips.style.top='';}
+  else{chips.classList.remove('sheet');const p=CITYXY[reg+"|"+city],xy=svgToPage(p[0],p[1]);const vw=innerWidth,vh=innerHeight,pw=236,ph=Math.min(vh*0.7,460);chips.style.left=Math.min(Math.max(xy[0]+10,12),vw-pw-12)+'px';chips.style.top=Math.min(Math.max(xy[1]-12,12),vh-ph-12)+'px';}
+  chips.querySelector('.x2').addEventListener('click',()=>{chips.style.display='none';});
+  const s=chips.querySelector('.srch'), nores=chips.querySelector('.nores');
+  if(s){s.addEventListener('input',()=>{const q=fold(s.value.trim());let n=0;chips.querySelectorAll('.bd button[data-i]').forEach(b=>{const hit=fold(b.querySelector('span').textContent).includes(q);b.style.display=hit?'':'none';if(hit)n++;});nores.style.display=n?'none':'block';});}
+  chips.querySelectorAll('.bd button[data-i]').forEach(b=>b.addEventListener('click',()=>openCard(arts[+b.dataset.i],reg,city)));
+}
 function openCard(a,reg,city){
   let h='<div class="cardx"><button class="x" aria-label="Chiudi">✕</button>'+
     '<div class="nm">'+a.nome+'</div>'+
