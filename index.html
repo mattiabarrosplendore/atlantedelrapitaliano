@@ -31,6 +31,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidd
 .sub{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em;margin-top:7px}
 .colophon{position:fixed;left:30px;bottom:26px;z-index:10;max-width:35ch;font-family:var(--serif);font-style:italic;
   font-size:13px;line-height:1.5;color:var(--soft);pointer-events:none}
+.colophon .mail{display:inline-block;margin-top:12px;font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--accent);text-decoration:none;pointer-events:auto;border-bottom:1px solid var(--hair);padding-bottom:2px}
+.colophon .mail:hover{color:var(--ink);border-color:var(--ink)}
 
 .back{position:fixed;top:28px;right:30px;z-index:10;display:none;align-items:center;gap:7px;font-family:var(--mono);
   font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:transparent;border:1px solid var(--hair);
@@ -77,6 +80,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidd
 
 @media (max-width:640px){
   .mast{top:14px;left:16px;max-width:78vw}
+  #stage{top:104px}
   .yr{margin-top:8px}
   .back{top:14px;right:14px}
   .colophon{left:16px;right:16px;bottom:16px;max-width:none;font-size:12px}
@@ -95,10 +99,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidd
 <div class="mast">
   <div class="ey">Atlante del rap italiano</div>
   <h1 class="tit">Geografia<br>di una scena</h1>
-  <div class="yr">1988 / 2016</div>
-  <div class="sub">Clicca una regione · tocca una città per gli artisti</div>
+  <div class="yr">1988 / 2006</div>
+  <div class="sub">Clicca una regione<br>tocca una città per gli artisti</div>
 </div>
-<div class="colophon">Un archivio impossibile degli esordi del rap in Italia, diviso per città e regione. Di golden age in golden age. Da un amante del rap agli amanti del rap.</div>
+<div class="colophon">Un archivio impossibile degli esordi del rap in Italia, diviso per città e regione. Di golden age in golden age. Da un amante del rap agli amanti del rap.<a class="mail" href="mailto:mattiabarrosplendore@gmail.com?subject=Atlante%20del%20rap%20italiano%20%E2%80%93%20correzioni%20e%20aggiunte">Per richiesta di correzioni e aggiunte</a></div>
 <button class="back" id="back"><span>←</span> Italia</button>
 
 <div class="chips" id="chips"></div>
@@ -188,9 +192,19 @@ function drawCities(reg,vb){
   items.forEach(it=>g.appendChild(it.hit));
   items.forEach(it=>g.appendChild(it.dot));
   items.forEach(it=>{if(it.label)g.appendChild(it.label);});
-  const hl=document.createElementNS(ns,'text');hl.setAttribute('class','clbl');hl.setAttribute('font-size',fs);hl.setAttribute('text-anchor','start');hl.setAttribute('stroke','var(--bg)');hl.setAttribute('stroke-width',2.6*upp);hl.setAttribute('paint-order','stroke');hl.setAttribute('stroke-linejoin','round');hl.setAttribute('font-weight','700');hl.style.display='none';hl.style.pointerEvents='none';g.appendChild(hl);
+  const hl=document.createElementNS(ns,'text');hl.setAttribute('class','clbl');hl.setAttribute('font-size',fs);hl.setAttribute('text-anchor','start');hl.setAttribute('stroke','var(--bg)');hl.setAttribute('stroke-width',2*upp);hl.setAttribute('paint-order','stroke');hl.setAttribute('stroke-linejoin','round');hl.style.display='none';hl.style.pointerEvents='none';g.appendChild(hl);
+  const ovA=(a,b)=>{const xx=Math.min(a[2],b[2])-Math.max(a[0],b[0]),yy=Math.min(a[3],b[3])-Math.max(a[1],b[1]);return xx>0&&yy>0?xx*yy:0;};
   items.forEach(it=>{if(it.label)return;
-    const show=()=>{hl.setAttribute('x',it.p[0]+r+gap);hl.setAttribute('y',it.p[1]+fs*0.35);hl.textContent=it.city;hl.style.display='';g.appendChild(hl);};
+    const p=it.p,w=it.w,h=fs;
+    const cands=[
+      {x:p[0]+r+gap,y:p[1]+fs*0.35,anchor:'start',rect:[p[0]+r+gap,p[1]-h*0.6,p[0]+r+gap+w,p[1]+h*0.6]},
+      {x:p[0]-r-gap,y:p[1]+fs*0.35,anchor:'end',rect:[p[0]-r-gap-w,p[1]-h*0.6,p[0]-r-gap,p[1]+h*0.6]},
+      {x:p[0],y:p[1]-r-gap-fs*0.25,anchor:'middle',rect:[p[0]-w/2,p[1]-r-gap-h,p[0]+w/2,p[1]-r-gap]},
+      {x:p[0],y:p[1]+r+gap+fs*0.8,anchor:'middle',rect:[p[0]-w/2,p[1]+r+gap,p[0]+w/2,p[1]+r+gap+h]}
+    ];
+    let best=cands[0],bo=Infinity;
+    cands.forEach(c=>{let o=0;for(const q of placed)o+=ovA(c.rect,q);for(const d of dotRects)o+=ovA(c.rect,d);if(o<bo){bo=o;best=c;}});
+    const show=()=>{hl.setAttribute('x',best.x);hl.setAttribute('y',best.y);hl.setAttribute('text-anchor',best.anchor);hl.textContent=it.city;hl.style.display='';g.appendChild(hl);};
     const hide=()=>{hl.style.display='none';};
     it.hit.addEventListener('mouseenter',show);it.hit.addEventListener('mouseleave',hide);
     it.dot.addEventListener('mouseenter',show);it.dot.addEventListener('mouseleave',hide);});
